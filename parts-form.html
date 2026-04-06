@@ -270,12 +270,14 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
   const recordId = params.get('id');
   const carNum = params.get('car');
 
-  if (!recordId || !carNum) {
-    document.getElementById('errorScreen').style.display = 'block';
-  } else {
-    document.getElementById('formContainer').style.display = 'block';
-    document.getElementById('dispCarNum').textContent = decodeURIComponent(carNum);
-    addPartRow();
+  function initForm() {
+    if (!recordId || !carNum) {
+      document.getElementById('errorScreen').style.display = 'block';
+    } else {
+      document.getElementById('formContainer').style.display = 'block';
+      document.getElementById('dispCarNum').textContent = decodeURIComponent(carNum);
+      addPartRow();
+    }
   }
 
   // 이미지 처리
@@ -337,6 +339,9 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
     // 최소 1행 유지
     if (!document.getElementById('partsList').children.length) addPartRow();
   };
+
+  // 초기화 실행
+  initForm();
 
   // 제출
   window.submitQuote = async function() {
