@@ -154,34 +154,6 @@
   .notif { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 13px; z-index: 999; transform: translateY(80px); opacity: 0; transition: all 0.3s; max-width: 300px; backdrop-filter: blur(20px); }
   .notif.show { transform: translateY(0); opacity: 1; }
 
-  /* 부품견적 알림 팝업 */
-  .parts-alert-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center; padding:20px; }
-  .parts-alert-overlay.open { display:flex; }
-  .parts-alert {
-    background:var(--surface); border:2px solid rgba(34,197,94,.4); border-radius:20px;
-    width:100%; max-width:420px; overflow:hidden;
-    box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 40px rgba(34,197,94,.1);
-    animation: alertSlideIn .4s ease;
-  }
-  @keyframes alertSlideIn { from { transform:translateY(30px) scale(.95); opacity:0; } to { transform:translateY(0) scale(1); opacity:1; } }
-  .parts-alert-header {
-    background:linear-gradient(135deg, rgba(34,197,94,.12), rgba(139,92,246,.08));
-    padding:20px 24px; text-align:center; border-bottom:1px solid var(--border);
-  }
-  .parts-alert-icon { font-size:40px; margin-bottom:8px; }
-  .parts-alert-title { font-size:17px; font-weight:800; color:var(--green); }
-  .parts-alert-sub { font-size:12px; color:var(--text-dim); margin-top:4px; }
-  .parts-alert-body { padding:16px 24px; }
-  .parts-alert-info { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; }
-  .parts-alert-info:last-child { border-bottom:none; }
-  .parts-alert-label { color:var(--text-dim); font-size:12px; }
-  .parts-alert-value { font-weight:700; }
-  .parts-alert-actions { padding:12px 24px 20px; display:flex; gap:10px; }
-  .parts-alert-actions button { flex:1; padding:12px; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Noto Sans KR',sans-serif; border:none; transition:all .2s; }
-  .parts-alert-btn-view { background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; }
-  .parts-alert-btn-view:hover { transform:translateY(-1px); box-shadow:0 4px 15px rgba(139,92,246,.4); }
-  .parts-alert-btn-close { background:var(--surface2); color:var(--text-dim); border:1px solid var(--border) !important; }
-  .parts-alert-btn-close:hover { background:var(--border); }
 
   .empty { text-align: center; padding: 60px 20px; color: var(--text-dim); }
   .empty-icon { font-size: 48px; margin-bottom: 12px; }
@@ -816,47 +788,6 @@
 
 <div class="notif" id="notif"></div>
 
-<!-- 이미지 크게보기 뷰어 -->
-<div id="imgViewerOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center;flex-direction:column;padding:15px;" onclick="if(event.target===this)closeImgViewer()">
-  <div style="margin-bottom:12px;display:flex;gap:10px;z-index:10;">
-    <button onclick="printPartsImage()" style="padding:10px 24px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;box-shadow:0 4px 15px rgba(139,92,246,.4);">🖨️ A4 프린트</button>
-    <button onclick="closeImgViewer()" style="padding:10px 24px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">✕ 닫기</button>
-  </div>
-  <img id="imgViewerImg" src="" style="max-width:95vw;max-height:calc(95vh - 70px);object-fit:contain;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">
-</div>
-
-<!-- 부품견적 도착 알림 팝업 -->
-<div class="parts-alert-overlay" id="partsAlertOverlay">
-  <div class="parts-alert">
-    <div class="parts-alert-header">
-      <div class="parts-alert-icon">🔩</div>
-      <div class="parts-alert-title">새 부품견적서 도착!</div>
-      <div class="parts-alert-sub">외주 부품업체에서 견적서를 제출했습니다</div>
-    </div>
-    <div class="parts-alert-body">
-      <div class="parts-alert-info">
-        <span class="parts-alert-label">차량번호</span>
-        <span class="parts-alert-value" id="partsAlertCarNum">—</span>
-      </div>
-      <div class="parts-alert-info">
-        <span class="parts-alert-label">업체명</span>
-        <span class="parts-alert-value" id="partsAlertSupplier">—</span>
-      </div>
-      <div class="parts-alert-info">
-        <span class="parts-alert-label">첨부 이미지</span>
-        <span class="parts-alert-value" style="color:var(--green);" id="partsAlertTotal">—</span>
-      </div>
-      <div class="parts-alert-info">
-        <span class="parts-alert-label">제출 시각</span>
-        <span class="parts-alert-value" style="font-size:12px;" id="partsAlertTime">—</span>
-      </div>
-    </div>
-    <div class="parts-alert-actions">
-      <button class="parts-alert-btn-close" onclick="closePartsAlert()">닫기</button>
-      <button class="parts-alert-btn-view" onclick="viewPartsAlert()">견적서 보기</button>
-    </div>
-  </div>
-</div>
 
 <!-- 상세보기 모달 -->
 <div class="modal-overlay" id="detailModal">
@@ -922,31 +853,6 @@
   </div>
 </div>
 
-<!-- 부품견적 모달 -->
-<div class="modal-overlay" id="partsQuoteModal">
-  <div class="modal" style="max-width:700px;">
-    <div class="modal-header">
-      <div class="modal-title">🔩 외주 부품견적 — <span id="partsQuoteCarNum"></span></div>
-      <button class="modal-close" onclick="document.getElementById('partsQuoteModal').classList.remove('open')">✕</button>
-    </div>
-    <div class="modal-body">
-      <!-- 링크 공유 -->
-      <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:12px 14px;margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px;">📎 부품업체에 이 링크를 전달하세요</div>
-        <div style="display:flex;gap:6px;">
-          <input class="form-input" id="partsQuoteLink" readonly style="font-size:11px;padding:8px 10px;font-family:monospace;flex:1;" onclick="this.select()">
-          <button class="btn btn-sm" style="background:var(--green);color:#000;white-space:nowrap;font-weight:700;" onclick="copyPartsLink()">복사</button>
-        </div>
-      </div>
-      <!-- 프린트 버튼 -->
-      <div id="partsQuotePrintWrap" style="display:none;margin-bottom:12px;">
-        <button class="btn btn-sm" style="background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3);font-weight:700;" onclick="printPartsQuotes()">🖨️ 전체 프린트 (A4)</button>
-      </div>
-      <!-- 견적 목록 -->
-      <div id="partsQuoteContent"></div>
-    </div>
-  </div>
-</div>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" style="display:none;position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;overflow:hidden;">
@@ -1006,7 +912,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, serverTimestamp, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -1317,141 +1223,6 @@
   window.fsSaveEst=async(e)=>{try{const id="E"+Date.now();await setDoc(doc(fsd,"estimates",id),{...e,id,at:serverTimestamp()});return id;}catch{return null;}};
   window.fsLoadEst=async()=>{try{const s=await getDocs(collection(fsd,"estimates"));return s.docs.map(d=>d.data()).sort((a,b)=>(b.at?.seconds||0)-(a.at?.seconds||0));}catch{return[];}};
   window.fsLoadMp=async()=>{try{const s=await getDocs(collection(fsd,"mappings"));return s.docs.map(d=>d.data());}catch{return[];}};
-  // 부품견적 로드 (외부업체 제출분)
-  window.fsLoadPartsQuotes=async(recordId)=>{
-    try{
-      const s=await getDocs(collection(fsd,"parts_quotes"));
-      return s.docs.map(d=>d.data()).filter(q=>q.recordId===recordId).sort((a,b)=>(b.submittedAt?.seconds||0)-(a.submittedAt?.seconds||0));
-    }catch{return[];}
-  };
-  // 부품견적 보기 팝업
-  window.showPartsQuotes=async function(recordId,carNum){
-    const quotes=await window.fsLoadPartsQuotes(recordId);
-    const modal=document.getElementById('partsQuoteModal');
-    const content=document.getElementById('partsQuoteContent');
-    if(!quotes.length){
-      content.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text-dim);"><div style="font-size:36px;margin-bottom:12px;">📭</div><div style="font-size:14px;">아직 등록된 부품견적이 없습니다</div><div style="font-size:12px;margin-top:8px;">부품업체에 아래 링크를 전달해주세요</div></div>';
-    } else {
-      content.innerHTML=quotes.map(function(q,qi){
-        var allImages = q.imageDataList && q.imageDataList.length ? q.imageDataList : (q.imageData ? [q.imageData] : []);
-        var imagesHtml = allImages.map(function(src, imgIdx){
-          return '<div style="margin-bottom:8px;text-align:center;">'
-            +'<img src="'+src+'" style="max-width:100%;max-height:400px;border-radius:8px;cursor:pointer;border:1px solid var(--border);" onclick="viewPartsImage('+qi+','+imgIdx+')" title="클릭하면 크게 보기">'
-            +'</div>';
-        }).join('');
-        var statusBadge=q.status==='pending'?'<span style="background:rgba(245,166,35,.15);color:#f5a623;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">대기중</span>'
-          :'<span style="background:rgba(34,197,94,.15);color:var(--green);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">확인완료</span>';
-        return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;">'
-          +'<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">'
-          +'<div><span style="font-weight:700;font-size:14px;">'+esc(q.supplier)+'</span></div>'
-          +'<div style="display:flex;align-items:center;gap:8px;">'+statusBadge
-          +'<span style="font-size:11px;color:var(--text-dim);">'+(q.submittedAt?new Date(q.submittedAt.seconds*1000).toLocaleDateString('ko-KR'):'-')+'</span></div>'
-          +'</div>'
-          +(allImages.length?'<div style="padding:12px 16px;">'+imagesHtml+'</div>':'<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">첨부 이미지 없음</div>')
-          +(q.memo?'<div style="padding:10px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--text-dim);background:rgba(139,92,246,.03);"><span style="font-weight:600;color:var(--text);margin-right:6px;">메모:</span>'+esc(q.memo)+'</div>':'')
-          +'</div>';
-      }).join('');
-    }
-    // 링크 생성 영역
-    var linkUrl=window.location.origin+window.location.pathname.replace(/[^\/]*$/,'')+'parts-form.html?id='+recordId+'&car='+encodeURIComponent(carNum);
-    document.getElementById('partsQuoteLink').value=linkUrl;
-    document.getElementById('partsQuoteCarNum').textContent=carNum;
-    document.getElementById('partsQuotePrintWrap').style.display=quotes.length?'block':'none';
-    window._partsQuotePrintData={carNum:carNum,quotes:quotes};
-    modal.classList.add('open');
-  };
-  window.copyPartsLink=function(){
-    var inp=document.getElementById('partsQuoteLink');
-    inp.select();navigator.clipboard.writeText(inp.value).then(function(){showNotif('링크가 복사되었습니다! 부품업체에 전달하세요 📋');});
-  };
-
-  // 이미지 크게 보기
-  window.viewPartsImage=function(quoteIdx, imgIdx){
-    var d=window._partsQuotePrintData;
-    if(!d||!d.quotes[quoteIdx])return;
-    var q=d.quotes[quoteIdx];
-    var allImages = q.imageDataList && q.imageDataList.length ? q.imageDataList : (q.imageData ? [q.imageData] : []);
-    var src=allImages[imgIdx];
-    if(!src)return;
-    var overlay=document.getElementById('imgViewerOverlay');
-    var img=document.getElementById('imgViewerImg');
-    img.src=src;
-    window._imgViewerPrintSrc=src;
-    window._imgViewerPrintInfo={supplier:q.supplier,carNum:d.carNum,date:q.submittedAt?new Date(q.submittedAt.seconds*1000).toLocaleDateString('ko-KR'):'-'};
-    overlay.style.display='flex';
-  };
-  window.closeImgViewer=function(){
-    document.getElementById('imgViewerOverlay').style.display='none';
-  };
-
-  // 이미지 A4 프린트
-  window.printPartsImage=function(){
-    var src=window._imgViewerPrintSrc;
-    var info=window._imgViewerPrintInfo||{};
-    if(!src)return;
-    var w=window.open('','_blank','width=900,height=700');
-    w.document.write('<html><head><meta charset="UTF-8"><title>부품견적서 - '+esc(info.carNum||'')+'</title>'
-      +'<style>'
-      +'body{margin:0;padding:0;font-family:"맑은 고딕",sans-serif;}'
-      +'@page{size:A4;margin:10mm;}'
-      +'@media print{.no-print{display:none!important;}}'
-      +'.header{text-align:center;padding:12px 0 8px;border-bottom:2px solid #333;margin-bottom:12px;}'
-      +'.info{display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:12px;padding:0 4px;}'
-      +'.img-wrap{text-align:center;}'
-      +'.img-wrap img{max-width:100%;max-height:calc(100vh - 120px);object-fit:contain;}'
-      +'</style></head><body>'
-      +'<div class="header">'
-      +'<div style="font-size:18px;font-weight:900;letter-spacing:2px;">KGM SEONGSU</div>'
-      +'<div style="font-size:10px;color:#888;letter-spacing:3px;">SERVICE CENTER · 부품 견적서</div>'
-      +'</div>'
-      +'<div class="info">'
-      +'<span>차량: <b>'+esc(info.carNum||'-')+'</b></span>'
-      +'<span>업체: <b>'+esc(info.supplier||'-')+'</b></span>'
-      +'<span>제출일: '+esc(info.date||'-')+'</span>'
-      +'<span>출력: '+new Date().toLocaleDateString('ko-KR')+'</span>'
-      +'</div>'
-      +'<div class="img-wrap"><img src="'+src+'"></div>'
-      +'<script>window.onload=function(){window.print();}<\/script>'
-      +'</body></html>');
-    w.document.close();
-  };
-
-  // 전체 견적서 프린트 (모든 이미지)
-  window.printPartsQuotes=function(){
-    var d=window._partsQuotePrintData;
-    if(!d||!d.quotes.length)return;
-    var today=new Date().toLocaleDateString('ko-KR');
-    var body=d.quotes.map(function(q){
-      var allImages = q.imageDataList && q.imageDataList.length ? q.imageDataList : (q.imageData ? [q.imageData] : []);
-      var submitDate=q.submittedAt?new Date(q.submittedAt.seconds*1000).toLocaleDateString('ko-KR'):'-';
-      var imagesHtml=allImages.map(function(src){
-        return '<div style="text-align:center;margin-bottom:10px;page-break-inside:avoid;">'
-          +'<img src="'+src+'" style="max-width:100%;max-height:800px;object-fit:contain;">'
-          +'</div>';
-      }).join('');
-      return '<div style="page-break-after:always;">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #333;">'
-        +'<span style="font-size:14px;font-weight:700;">'+esc(q.supplier)+'</span>'
-        +'<span style="font-size:11px;color:#888;">제출일: '+submitDate+'</span>'
-        +'</div>'
-        +imagesHtml
-        +(q.memo?'<div style="margin-top:8px;padding:8px 12px;background:#f8f8f8;border-radius:6px;font-size:12px;"><b>메모:</b> '+esc(q.memo)+'</div>':'')
-        +'</div>';
-    }).join('');
-    var w=window.open('','_blank','width=900,height=700');
-    w.document.write('<html><head><meta charset="UTF-8"><title>부품견적서 - '+esc(d.carNum)+'</title>'
-      +'<style>body{font-family:"맑은 고딕",sans-serif;margin:20px;color:#111;}'
-      +'@page{size:A4;margin:10mm;}</style></head><body>'
-      +'<div style="text-align:center;margin-bottom:16px;">'
-      +'<div style="font-size:20px;font-weight:900;letter-spacing:2px;">KGM SEONGSU</div>'
-      +'<div style="font-size:11px;color:#888;letter-spacing:3px;">SERVICE CENTER · 부품 견적서</div></div>'
-      +'<div style="display:flex;justify-content:space-between;padding:8px 14px;background:#f8f8f8;border-radius:6px;font-size:12px;margin-bottom:16px;">'
-      +'<span>차량번호: <b>'+esc(d.carNum)+'</b></span>'
-      +'<span>출력일: '+today+'</span></div>'
-      +body
-      +'<script>window.onload=function(){window.print();}<\/script></body></html>');
-    w.document.close();
-  };
   // 견적↔차량 연동용: Firebase RTDB update/ref 전역 노출
   window._fbDb=db; window._fbRef=ref; window._fbUpdate=update;
   (async()=>{const ms=await window.fsLoadMp();if(ms.length){let lc=[];try{lc=JSON.parse(localStorage.getItem("kgm_custom")||"[]");}catch{}const mg=[...ms,...lc.filter(l=>!ms.some(c=>c.label===l.label))];localStorage.setItem("kgm_custom",JSON.stringify(mg));}})();
@@ -1638,7 +1409,7 @@
         <td>${fmt(r.inDate)}</td>
         <td>${fmt(r.outDate)}</td>
         <td>${statusQuickCell(r.id, r.status)}</td>
-        <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${r.estimateId ? `<button class="btn btn-sm" style="background:rgba(139,92,246,0.12);color:var(--accent);border:1px solid rgba(139,92,246,0.3);font-size:11px;white-space:nowrap;" onclick="showEstimatePopup('${esc(r.estimateId)}')">📋 견적서</button>` : `<button class="btn btn-sm" style="background:rgba(139,92,246,0.08);color:var(--text-dim);border:1px dashed rgba(139,92,246,0.2);font-size:11px;white-space:nowrap;" onclick="goEstimateForRecord('${esc(r.id)}')">🔧 견적작성</button>`}<button class="btn btn-sm" style="background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.3);font-size:11px;white-space:nowrap;" onclick="showPartsQuotes('${esc(r.id)}','${esc(r.carNum)}')">🔩 부품견적</button></div></td>
+        <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${r.estimateId ? `<button class="btn btn-sm" style="background:rgba(139,92,246,0.12);color:var(--accent);border:1px solid rgba(139,92,246,0.3);font-size:11px;white-space:nowrap;" onclick="showEstimatePopup('${esc(r.estimateId)}')">📋 견적서</button>` : `<button class="btn btn-sm" style="background:rgba(139,92,246,0.08);color:var(--text-dim);border:1px dashed rgba(139,92,246,0.2);font-size:11px;white-space:nowrap;" onclick="goEstimateForRecord('${esc(r.id)}')">🔧 견적작성</button>`}</div></td>
       </tr>`).join('');
   }
 
@@ -2109,59 +1880,6 @@
   }
   window.showNotif = showNotif;
 
-  // ---- 부품견적 실시간 알림 ----
-  let _partsQuoteIds = null; // 초기 로드 시 기존 ID 저장 (첫 로드는 알림 안 띄움)
-  let _partsAlertQueue = [];
-  let _partsAlertCurrent = null;
-
-  const partsQuotesQuery = query(collection(fsd, 'parts_quotes'), orderBy('submittedAt', 'desc'));
-  onSnapshot(partsQuotesQuery, (snapshot) => {
-    if (_partsQuoteIds === null) {
-      // 첫 로드: 기존 문서 ID만 기록
-      _partsQuoteIds = new Set(snapshot.docs.map(d => d.id));
-      return;
-    }
-    snapshot.docChanges().forEach(change => {
-      if (change.type === 'added' && !_partsQuoteIds.has(change.doc.id)) {
-        _partsQuoteIds.add(change.doc.id);
-        const data = change.doc.data();
-        _partsAlertQueue.push(data);
-        if (!_partsAlertCurrent) showNextPartsAlert();
-      }
-    });
-  });
-
-  function showNextPartsAlert() {
-    if (!_partsAlertQueue.length) { _partsAlertCurrent = null; return; }
-    _partsAlertCurrent = _partsAlertQueue.shift();
-    const q = _partsAlertCurrent;
-    document.getElementById('partsAlertCarNum').textContent = q.carNum || '—';
-    document.getElementById('partsAlertSupplier').textContent = q.supplier || '—';
-    var imgCount = (q.imageDataList && q.imageDataList.length) ? q.imageDataList.length : (q.imageData ? 1 : 0);
-    document.getElementById('partsAlertTotal').textContent = imgCount ? imgCount + '장' : '없음';
-    const t = q.submittedAt ? new Date(q.submittedAt.seconds * 1000) : new Date();
-    document.getElementById('partsAlertTime').textContent = t.toLocaleString('ko-KR');
-    document.getElementById('partsAlertOverlay').classList.add('open');
-    // 알림음
-    try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2LkZmXkIiAd3N4gIeLjYuHg39+gYWJi4mGgoB/goaJi4mGgoB+gIOHiomHhIF/foCEiIqIhoOBf4CEiIqIhoOBf4CEh4mHhYKAfoCDh4mIhoOBf4CDh4mHhYKAfn+DhoiHhYKAfn+DhoiHhYOBf3+ChoeHhYOBf3+ChoeGhIOBf3+ChoeGhIOBfn+ChYaGhIOBfn+ChYaGhIOBfn+ChYaGhIOBfn+ChYaGhIOBfn6BhYaGhYOBfn6BhYaGhYOBfn6BhIWGhYOBfn6BhIWFhYOBfn6BhIWFhYOBfn6BhIWFhIOBfn6BhIWFhIOBfn6BhIWFhIOBfn6AhIWFhIOBfn6AhIWFhIOBfn6AhIWFhIOBfn6AhIWFhIOAfn6Ag4SFhIOAfn6Ag4SFhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIKAfn6Ag4SEhIKAfn6Ag4SEhIKAfn5/g4SEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/goOEhIKAfn5/goOEhIKAfn5/goOEhIKAfn5/goOEhIKAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/gYODg4F/fn5/gYODg4F/fn5/gYODg4F/fn5/gYODg4F/fn5/gYODg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5+gYKDg4F/fn5+gYKDg4F/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgIB/fn59gIGBgIB/fn59gIGBgIB/fn59gIGBgIB/fn59').play(); } catch(e) {}
-  }
-
-  window.closePartsAlert = function() {
-    document.getElementById('partsAlertOverlay').classList.remove('open');
-    setTimeout(showNextPartsAlert, 300);
-  };
-
-  window.viewPartsAlert = function() {
-    const q = _partsAlertCurrent;
-    document.getElementById('partsAlertOverlay').classList.remove('open');
-    if (q && q.recordId && q.carNum) {
-      showPartsQuotes(q.recordId, q.carNum);
-    }
-    _partsAlertCurrent = null;
-    // 남은 큐가 있으면 이어서
-    setTimeout(showNextPartsAlert, 500);
-  };
-
   // expose renderList for search input
   window.renderList = renderList;
   window.renderDashboard = renderDashboard;
@@ -2346,9 +2064,6 @@
     if (e.target === this) this.classList.remove('open');
   });
   document.getElementById('detailModal').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('open');
-  });
-  document.getElementById('partsQuoteModal').addEventListener('click', function(e) {
     if (e.target === this) this.classList.remove('open');
   });
   document.getElementById('insDetailModal').addEventListener('click', function(e) {
