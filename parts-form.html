@@ -174,11 +174,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
     <div class="section-title">업체 정보</div>
     <div class="form-group">
       <label class="form-label">업체명 *</label>
-      <input class="form-input" id="supplierName" placeholder="부품업체명을 입력하세요">
-    </div>
-    <div class="form-group">
-      <label class="form-label">담당자 연락처</label>
-      <input class="form-input" id="supplierPhone" placeholder="010-0000-0000" type="tel">
+      <select class="form-input" id="supplierName">
+        <option value="">업체를 선택하세요</option>
+        <option value="에픽오토파츠">에픽오토파츠</option>
+      </select>
     </div>
   </div>
 
@@ -383,7 +382,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
         recordId: recordId,
         carNum: decodeURIComponent(carNum),
         supplier: supplier,
-        phone: document.getElementById('supplierPhone').value.trim(),
+        phone: '',
         imageData: imgData,
         memo: document.getElementById('repairMemo').value.trim(),
         parts: parts,
