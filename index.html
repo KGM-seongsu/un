@@ -1007,7 +1007,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getFirestore, collection, doc, setDoc, getDoc, getDocs, serverTimestamp, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDkXYh2P-EJPf2A_jwq2Kk2gDs0ZFdMP2M",
@@ -1040,12 +1040,29 @@
     viewer: ['dashboard']
   };
 
+  // 모바일 판별
+  function isMobile() {
+    return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  }
+
+  // 리다이렉트 로그인 결과 처리 (모바일)
+  getRedirectResult(auth).catch(function(e){
+    if(e.code && e.code !== 'auth/null-user'){
+      document.getElementById('loginError').textContent='로그인 실패: '+e.message;
+      document.getElementById('loginError').style.display='block';
+    }
+  });
+
   // Google 로그인
   window.authGoogleLogin = async function(){
     try {
       document.getElementById('loginError').style.display='none';
       document.getElementById('loginDenied').style.display='none';
-      await signInWithPopup(auth, provider);
+      if (isMobile()) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+      }
     } catch(e) {
       document.getElementById('loginError').textContent='로그인 실패: '+e.message;
       document.getElementById('loginError').style.display='block';
