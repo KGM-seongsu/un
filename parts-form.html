@@ -70,15 +70,19 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
 .img-icon { font-size: 36px; margin-bottom: 8px; }
 .img-text { font-size: 13px; color: var(--text-dim); }
 .img-text strong { color: var(--accent); }
-.img-preview {
-  width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; display: none;
+.img-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 8px;
 }
-.img-remove {
-  display: none; margin-top: 8px; padding: 6px 14px;
-  background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3);
-  border-radius: 6px; color: var(--red); font-size: 12px; cursor: pointer;
-  font-family: 'Noto Sans KR', sans-serif;
+.img-thumb {
+  position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1; background: var(--surface2);
 }
+.img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.img-thumb-del {
+  position: absolute; top: 4px; right: 4px; width: 22px; height: 22px;
+  background: rgba(239,68,68,.85); border: none; border-radius: 50%;
+  color: #fff; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.img-count { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
 
 /* 부품 목록 */
 .part-row {
@@ -185,12 +189,12 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
   <div class="section">
     <div class="section-title">견적서 이미지</div>
     <div class="img-upload" id="imgUpload" onclick="document.getElementById('imgFile').click()">
-      <input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleImage(this)">
+      <input type="file" id="imgFile" accept="image/*" multiple style="display:none" onchange="handleImages(this)">
       <div class="img-icon" id="imgIcon">📷</div>
-      <div class="img-text" id="imgText">클릭하여 <strong>견적서 사진</strong>을 업로드하세요<br><span style="font-size:11px;opacity:.6;">JPG, PNG (최대 5MB)</span></div>
-      <img class="img-preview" id="imgPreview">
-      <button class="img-remove" id="imgRemove" onclick="removeImage(event)">이미지 삭제</button>
+      <div class="img-text" id="imgText">클릭하여 <strong>견적서 사진</strong>을 업로드하세요<br><span style="font-size:11px;opacity:.6;">JPG, PNG · 여러 장 선택 가능 (장당 5MB)</span></div>
     </div>
+    <div class="img-grid" id="imgGrid"></div>
+    <div class="img-count" id="imgCount"></div>
   </div>
 
   <!-- 수리 메모 -->
@@ -279,41 +283,51 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
     }
   }
 
-  // 이미지 처리
-  window._imgFile = null;
+  // 이미지 처리 (여러 장)
+  window._imgFiles = [];
 
-  window.handleImage = function(input) {
-    const file = input.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('이미지 크기는 5MB 이하만 가능합니다.');
-      input.value = '';
-      return;
-    }
-    window._imgFile = file;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const preview = document.getElementById('imgPreview');
-      preview.src = e.target.result;
-      preview.style.display = 'block';
+  function renderImageGrid() {
+    var grid = document.getElementById('imgGrid');
+    var count = document.getElementById('imgCount');
+    grid.innerHTML = window._imgFiles.map(function(f, i) {
+      return '<div class="img-thumb" id="imgThumb-' + i + '">'
+        + '<img src="' + f.preview + '">'
+        + '<button class="img-thumb-del" onclick="removeImage(' + i + ',event)">×</button>'
+        + '</div>';
+    }).join('');
+    count.textContent = window._imgFiles.length ? window._imgFiles.length + '장 첨부됨' : '';
+    if (window._imgFiles.length) {
       document.getElementById('imgIcon').style.display = 'none';
-      document.getElementById('imgText').style.display = 'none';
-      document.getElementById('imgRemove').style.display = 'inline-block';
-      document.getElementById('imgUpload').classList.add('has-image');
-    };
-    reader.readAsDataURL(file);
+      document.getElementById('imgText').innerHTML = '+ 사진 추가';
+    } else {
+      document.getElementById('imgIcon').style.display = 'block';
+      document.getElementById('imgText').innerHTML = '클릭하여 <strong>견적서 사진</strong>을 업로드하세요<br><span style="font-size:11px;opacity:.6;">JPG, PNG · 여러 장 선택 가능 (장당 5MB)</span>';
+    }
+  }
+
+  window.handleImages = function(input) {
+    var files = Array.from(input.files);
+    for (var i = 0; i < files.length; i++) {
+      if (files[i].size > 5 * 1024 * 1024) {
+        alert(files[i].name + ' — 5MB 초과로 제외됩니다.');
+        continue;
+      }
+      (function(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          window._imgFiles.push({ file: file, preview: e.target.result });
+          renderImageGrid();
+        };
+        reader.readAsDataURL(file);
+      })(files[i]);
+    }
+    input.value = '';
   };
 
-  window.removeImage = function(e) {
+  window.removeImage = function(idx, e) {
     e.stopPropagation();
-    window._imgFile = null;
-    document.getElementById('imgFile').value = '';
-    document.getElementById('imgPreview').style.display = 'none';
-    document.getElementById('imgPreview').src = '';
-    document.getElementById('imgIcon').style.display = 'block';
-    document.getElementById('imgText').style.display = 'block';
-    document.getElementById('imgRemove').style.display = 'none';
-    document.getElementById('imgUpload').classList.remove('has-image');
+    window._imgFiles.splice(idx, 1);
+    renderImageGrid();
   };
 
   // 부품 행 추가
@@ -366,11 +380,14 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
 
     try {
       var imgData = '';
+      var imgDataList = [];
 
-      // 이미지 압축 후 base64로 변환 (Storage 불필요)
-      if (window._imgFile) {
-        imgData = await compressImage(window._imgFile, 1200, 0.7);
+      // 이미지 압축 후 base64로 변환 (여러 장)
+      for (var i = 0; i < window._imgFiles.length; i++) {
+        var compressed = await compressImage(window._imgFiles[i].file, 1200, 0.7);
+        imgDataList.push(compressed);
       }
+      if (imgDataList.length) imgData = imgDataList[0];
 
       // 총액 계산
       var totalAmount = parts.reduce(function(s, p) { return s + p.subtotal; }, 0);
@@ -384,6 +401,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
         supplier: supplier,
         phone: '',
         imageData: imgData,
+        imageDataList: imgDataList,
         memo: document.getElementById('repairMemo').value.trim(),
         parts: parts,
         totalAmount: totalAmount,
