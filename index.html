@@ -817,14 +817,12 @@
 <div class="notif" id="notif"></div>
 
 <!-- 이미지 크게보기 뷰어 -->
-<div class="parts-alert-overlay" id="imgViewerOverlay" onclick="if(event.target===this)closeImgViewer()">
-  <div style="position:relative;max-width:95vw;max-height:95vh;display:flex;flex-direction:column;align-items:center;">
-    <div style="margin-bottom:10px;display:flex;gap:10px;">
-      <button onclick="printPartsImage()" style="padding:10px 24px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">🖨️ A4 프린트</button>
-      <button onclick="closeImgViewer()" style="padding:10px 24px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">✕ 닫기</button>
-    </div>
-    <img id="imgViewerImg" src="" style="max-width:95vw;max-height:calc(95vh - 60px);object-fit:contain;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">
+<div id="imgViewerOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center;flex-direction:column;padding:15px;" onclick="if(event.target===this)closeImgViewer()">
+  <div style="margin-bottom:12px;display:flex;gap:10px;z-index:10;">
+    <button onclick="printPartsImage()" style="padding:10px 24px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;box-shadow:0 4px 15px rgba(139,92,246,.4);">🖨️ A4 프린트</button>
+    <button onclick="closeImgViewer()" style="padding:10px 24px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">✕ 닫기</button>
   </div>
+  <img id="imgViewerImg" src="" style="max-width:95vw;max-height:calc(95vh - 70px);object-fit:contain;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">
 </div>
 
 <!-- 부품견적 도착 알림 팝업 -->
@@ -1375,10 +1373,10 @@
     img.src=src;
     window._imgViewerPrintSrc=src;
     window._imgViewerPrintInfo={supplier:q.supplier,carNum:d.carNum,date:q.submittedAt?new Date(q.submittedAt.seconds*1000).toLocaleDateString('ko-KR'):'-'};
-    overlay.classList.add('open');
+    overlay.style.display='flex';
   };
   window.closeImgViewer=function(){
-    document.getElementById('imgViewerOverlay').classList.remove('open');
+    document.getElementById('imgViewerOverlay').style.display='none';
   };
 
   // 이미지 A4 프린트
