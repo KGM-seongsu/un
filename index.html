@@ -1045,14 +1045,6 @@
     return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
   }
 
-  // 리다이렉트 로그인 결과 처리 (모바일)
-  getRedirectResult(auth).catch(function(e){
-    if(e.code && e.code !== 'auth/null-user'){
-      document.getElementById('loginError').textContent='로그인 실패: '+e.message;
-      document.getElementById('loginError').style.display='block';
-    }
-  });
-
   // Google 로그인
   window.authGoogleLogin = async function(){
     try {
@@ -1075,12 +1067,30 @@
     document.getElementById('googleLoginBtn').style.display='flex';
   };
 
+  // 리다이렉트 결과 먼저 처리 후 인증 상태 감시
+  let _redirectChecked = false;
+  getRedirectResult(auth).then(function(result){
+    _redirectChecked = true;
+    // result가 있으면 onAuthStateChanged가 자동으로 처리함
+  }).catch(function(e){
+    _redirectChecked = true;
+    if(e.code && e.code !== 'auth/null-user'){
+      document.getElementById('loginError').textContent='로그인 실패: '+e.message;
+      document.getElementById('loginError').style.display='block';
+    }
+  });
+
   // 인증 상태 감시
   onAuthStateChanged(auth, async(user)=>{
     const loginScreen = document.getElementById('loginScreen');
     const loadingScreen = document.getElementById('loadingScreen');
 
     if(!user){
+      // 모바일 리다이렉트 결과 아직 안 왔으면 잠시 대기
+      if(!_redirectChecked && isMobile()){
+        // 리다이렉트 결과 처리 중이면 로그인 화면 아직 안 보여줌
+        return;
+      }
       // 로그아웃 상태 → 로그인 화면
       loginScreen.style.display='flex';
       document.body.style.overflow='hidden';
