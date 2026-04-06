@@ -154,6 +154,35 @@
   .notif { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 13px; z-index: 999; transform: translateY(80px); opacity: 0; transition: all 0.3s; max-width: 300px; backdrop-filter: blur(20px); }
   .notif.show { transform: translateY(0); opacity: 1; }
 
+  /* 부품견적 알림 팝업 */
+  .parts-alert-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+  .parts-alert-overlay.open { display:flex; }
+  .parts-alert {
+    background:var(--surface); border:2px solid rgba(34,197,94,.4); border-radius:20px;
+    width:100%; max-width:420px; overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 40px rgba(34,197,94,.1);
+    animation: alertSlideIn .4s ease;
+  }
+  @keyframes alertSlideIn { from { transform:translateY(30px) scale(.95); opacity:0; } to { transform:translateY(0) scale(1); opacity:1; } }
+  .parts-alert-header {
+    background:linear-gradient(135deg, rgba(34,197,94,.12), rgba(139,92,246,.08));
+    padding:20px 24px; text-align:center; border-bottom:1px solid var(--border);
+  }
+  .parts-alert-icon { font-size:40px; margin-bottom:8px; }
+  .parts-alert-title { font-size:17px; font-weight:800; color:var(--green); }
+  .parts-alert-sub { font-size:12px; color:var(--text-dim); margin-top:4px; }
+  .parts-alert-body { padding:16px 24px; }
+  .parts-alert-info { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; }
+  .parts-alert-info:last-child { border-bottom:none; }
+  .parts-alert-label { color:var(--text-dim); font-size:12px; }
+  .parts-alert-value { font-weight:700; }
+  .parts-alert-actions { padding:12px 24px 20px; display:flex; gap:10px; }
+  .parts-alert-actions button { flex:1; padding:12px; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Noto Sans KR',sans-serif; border:none; transition:all .2s; }
+  .parts-alert-btn-view { background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; }
+  .parts-alert-btn-view:hover { transform:translateY(-1px); box-shadow:0 4px 15px rgba(139,92,246,.4); }
+  .parts-alert-btn-close { background:var(--surface2); color:var(--text-dim); border:1px solid var(--border) !important; }
+  .parts-alert-btn-close:hover { background:var(--border); }
+
   .empty { text-align: center; padding: 60px 20px; color: var(--text-dim); }
   .empty-icon { font-size: 48px; margin-bottom: 12px; }
 
@@ -441,7 +470,28 @@
       <div class="stat-card green"><div class="stat-label">수리 완료</div><div class="stat-value" id="stat-done">0</div><div class="stat-sub">출고 대기</div></div>
       <div class="stat-card red"><div class="stat-label">오늘 입고</div><div class="stat-value" id="stat-today">0</div><div class="stat-sub">금일 접수</div></div>
     </div>
-    <div class="section-header"><div class="section-title">📋 현황 목록</div></div>
+    <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div class="section-title">📋 현황 목록</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="form-input" id="dashSearchInput" type="text" placeholder="차량번호 / 고객명 / 연락처 검색" oninput="renderDashboard()" style="width:260px;padding:8px 12px;font-size:13px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);">
+        <select class="form-input" id="dashFilterLoc" onchange="renderDashboard()" style="width:100px;padding:8px 10px;font-size:13px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);">
+          <option value="">전체 위치</option>
+          <option value="1층">1층</option>
+          <option value="판금">판금</option>
+          <option value="도장">도장</option>
+          <option value="정비">정비</option>
+          <option value="5층">5층</option>
+          <option value="지하">지하</option>
+        </select>
+        <select class="form-input" id="dashFilterStatus" onchange="renderDashboard()" style="width:100px;padding:8px 10px;font-size:13px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);">
+          <option value="">전체 상태</option>
+          <option value="입고">입고</option>
+          <option value="수리중">수리중</option>
+          <option value="수리완료">수리완료</option>
+        </select>
+      </div>
+    </div>
+    <div id="dashSearchResult" style="display:none;margin-bottom:8px;font-size:12px;color:var(--text-dim);"></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>차량번호</th><th>고객명</th><th>연락처</th><th>위치</th><th>대물보험</th><th>자차보험</th><th>수리내용</th><th>렌트카</th><th>입고일</th><th>출고예정</th><th>상태</th><th>견적</th></tr></thead>
@@ -766,6 +816,50 @@
 
 <div class="notif" id="notif"></div>
 
+<!-- 이미지 크게보기 뷰어 -->
+<div class="parts-alert-overlay" id="imgViewerOverlay" onclick="if(event.target===this)closeImgViewer()">
+  <div style="position:relative;max-width:95vw;max-height:95vh;display:flex;flex-direction:column;align-items:center;">
+    <div style="margin-bottom:10px;display:flex;gap:10px;">
+      <button onclick="printPartsImage()" style="padding:10px 24px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">🖨️ A4 프린트</button>
+      <button onclick="closeImgViewer()" style="padding:10px 24px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">✕ 닫기</button>
+    </div>
+    <img id="imgViewerImg" src="" style="max-width:95vw;max-height:calc(95vh - 60px);object-fit:contain;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">
+  </div>
+</div>
+
+<!-- 부품견적 도착 알림 팝업 -->
+<div class="parts-alert-overlay" id="partsAlertOverlay">
+  <div class="parts-alert">
+    <div class="parts-alert-header">
+      <div class="parts-alert-icon">🔩</div>
+      <div class="parts-alert-title">새 부품견적서 도착!</div>
+      <div class="parts-alert-sub">외주 부품업체에서 견적서를 제출했습니다</div>
+    </div>
+    <div class="parts-alert-body">
+      <div class="parts-alert-info">
+        <span class="parts-alert-label">차량번호</span>
+        <span class="parts-alert-value" id="partsAlertCarNum">—</span>
+      </div>
+      <div class="parts-alert-info">
+        <span class="parts-alert-label">업체명</span>
+        <span class="parts-alert-value" id="partsAlertSupplier">—</span>
+      </div>
+      <div class="parts-alert-info">
+        <span class="parts-alert-label">첨부 이미지</span>
+        <span class="parts-alert-value" style="color:var(--green);" id="partsAlertTotal">—</span>
+      </div>
+      <div class="parts-alert-info">
+        <span class="parts-alert-label">제출 시각</span>
+        <span class="parts-alert-value" style="font-size:12px;" id="partsAlertTime">—</span>
+      </div>
+    </div>
+    <div class="parts-alert-actions">
+      <button class="parts-alert-btn-close" onclick="closePartsAlert()">닫기</button>
+      <button class="parts-alert-btn-view" onclick="viewPartsAlert()">견적서 보기</button>
+    </div>
+  </div>
+</div>
+
 <!-- 상세보기 모달 -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal" style="max-width:500px;">
@@ -848,7 +942,7 @@
       </div>
       <!-- 프린트 버튼 -->
       <div id="partsQuotePrintWrap" style="display:none;margin-bottom:12px;">
-        <button class="btn btn-sm" style="background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3);font-weight:700;" onclick="printPartsQuotes()">🖨️ 부품견적서 프린트</button>
+        <button class="btn btn-sm" style="background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3);font-weight:700;" onclick="printPartsQuotes()">🖨️ 전체 프린트 (A4)</button>
       </div>
       <!-- 견적 목록 -->
       <div id="partsQuoteContent"></div>
@@ -914,7 +1008,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, serverTimestamp, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -1235,33 +1329,24 @@
     if(!quotes.length){
       content.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text-dim);"><div style="font-size:36px;margin-bottom:12px;">📭</div><div style="font-size:14px;">아직 등록된 부품견적이 없습니다</div><div style="font-size:12px;margin-top:8px;">부품업체에 아래 링크를 전달해주세요</div></div>';
     } else {
-      content.innerHTML=quotes.map(function(q){
-        var partsHtml=(q.parts||[]).map(function(p,i){
-          return '<tr><td style="padding:6px 8px;font-size:12px;border-bottom:1px solid var(--border);">'+(i+1)+'</td>'
-            +'<td style="padding:6px 8px;font-size:12px;border-bottom:1px solid var(--border);">'+esc(p.name)+'</td>'
-            +'<td style="padding:6px 8px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text-dim);">'+esc(p.code||'-')+'</td>'
-            +'<td style="padding:6px 8px;font-size:12px;border-bottom:1px solid var(--border);text-align:right;font-family:monospace;">'+(p.price?p.price.toLocaleString()+'원':'-')+'</td>'
-            +'<td style="padding:6px 8px;font-size:12px;border-bottom:1px solid var(--border);text-align:center;">'+p.qty+'</td>'
-            +'<td style="padding:6px 8px;font-size:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:var(--green);font-family:monospace;">'+(p.subtotal?p.subtotal.toLocaleString()+'원':'-')+'</td></tr>';
+      content.innerHTML=quotes.map(function(q,qi){
+        var allImages = q.imageDataList && q.imageDataList.length ? q.imageDataList : (q.imageData ? [q.imageData] : []);
+        var imagesHtml = allImages.map(function(src, imgIdx){
+          return '<div style="margin-bottom:8px;text-align:center;">'
+            +'<img src="'+src+'" style="max-width:100%;max-height:400px;border-radius:8px;cursor:pointer;border:1px solid var(--border);" onclick="viewPartsImage('+qi+','+imgIdx+')" title="클릭하면 크게 보기">'
+            +'</div>';
         }).join('');
         var statusBadge=q.status==='pending'?'<span style="background:rgba(245,166,35,.15);color:#f5a623;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">대기중</span>'
           :'<span style="background:rgba(34,197,94,.15);color:var(--green);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">확인완료</span>';
         return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;">'
           +'<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">'
-          +'<div><span style="font-weight:700;font-size:14px;">'+esc(q.supplier)+'</span>'
-          +(q.phone?'<span style="margin-left:8px;font-size:12px;color:var(--text-dim);">'+esc(q.phone)+'</span>':'')+'</div>'
+          +'<div><span style="font-weight:700;font-size:14px;">'+esc(q.supplier)+'</span></div>'
           +'<div style="display:flex;align-items:center;gap:8px;">'+statusBadge
           +'<span style="font-size:11px;color:var(--text-dim);">'+(q.submittedAt?new Date(q.submittedAt.seconds*1000).toLocaleDateString('ko-KR'):'-')+'</span></div>'
           +'</div>'
-          +(q.imageData?'<div style="padding:12px 16px;border-bottom:1px solid var(--border);"><img src="'+q.imageData+'" style="max-width:100%;max-height:300px;border-radius:8px;cursor:pointer;" onclick="window.open(this.src)"></div>':'')
-          +(q.memo?'<div style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-dim);background:rgba(139,92,246,.03);"><span style="font-weight:600;color:var(--text);margin-right:6px;">메모:</span>'+esc(q.memo)+'</div>':'')
-          +'<div style="padding:8px 12px;overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'
-          +'<thead><tr style="border-bottom:2px solid var(--border);"><th style="padding:6px 8px;font-size:10px;color:var(--text-dim);text-align:left;">#</th><th style="padding:6px 8px;font-size:10px;color:var(--text-dim);text-align:left;">부품명</th><th style="padding:6px 8px;font-size:10px;color:var(--text-dim);text-align:left;">부품번호</th><th style="padding:6px 8px;font-size:10px;color:var(--text-dim);text-align:right;">단가</th><th style="padding:6px 8px;font-size:10px;color:var(--text-dim);text-align:center;">수량</th><th style="padding:6px 8px;font-size:10px;color:var(--text-dim);text-align:right;">소계</th></tr></thead>'
-          +'<tbody>'+partsHtml+'</tbody></table></div>'
-          +'<div style="padding:10px 16px;background:var(--surface2);display:flex;justify-content:space-between;align-items:center;">'
-          +'<span style="font-size:12px;color:var(--text-dim);">부품 합계</span>'
-          +'<span style="font-size:16px;font-weight:900;color:var(--green);font-family:monospace;">'+((q.totalAmount||0).toLocaleString())+'원</span>'
-          +'</div></div>';
+          +(allImages.length?'<div style="padding:12px 16px;">'+imagesHtml+'</div>':'<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">첨부 이미지 없음</div>')
+          +(q.memo?'<div style="padding:10px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--text-dim);background:rgba(139,92,246,.03);"><span style="font-weight:600;color:var(--text);margin-right:6px;">메모:</span>'+esc(q.memo)+'</div>':'')
+          +'</div>';
       }).join('');
     }
     // 링크 생성 영역
@@ -1276,63 +1361,91 @@
     var inp=document.getElementById('partsQuoteLink');
     inp.select();navigator.clipboard.writeText(inp.value).then(function(){showNotif('링크가 복사되었습니다! 부품업체에 전달하세요 📋');});
   };
-  // 부품견적 프린트
+
+  // 이미지 크게 보기
+  window.viewPartsImage=function(quoteIdx, imgIdx){
+    var d=window._partsQuotePrintData;
+    if(!d||!d.quotes[quoteIdx])return;
+    var q=d.quotes[quoteIdx];
+    var allImages = q.imageDataList && q.imageDataList.length ? q.imageDataList : (q.imageData ? [q.imageData] : []);
+    var src=allImages[imgIdx];
+    if(!src)return;
+    var overlay=document.getElementById('imgViewerOverlay');
+    var img=document.getElementById('imgViewerImg');
+    img.src=src;
+    window._imgViewerPrintSrc=src;
+    window._imgViewerPrintInfo={supplier:q.supplier,carNum:d.carNum,date:q.submittedAt?new Date(q.submittedAt.seconds*1000).toLocaleDateString('ko-KR'):'-'};
+    overlay.classList.add('open');
+  };
+  window.closeImgViewer=function(){
+    document.getElementById('imgViewerOverlay').classList.remove('open');
+  };
+
+  // 이미지 A4 프린트
+  window.printPartsImage=function(){
+    var src=window._imgViewerPrintSrc;
+    var info=window._imgViewerPrintInfo||{};
+    if(!src)return;
+    var w=window.open('','_blank','width=900,height=700');
+    w.document.write('<html><head><meta charset="UTF-8"><title>부품견적서 - '+esc(info.carNum||'')+'</title>'
+      +'<style>'
+      +'body{margin:0;padding:0;font-family:"맑은 고딕",sans-serif;}'
+      +'@page{size:A4;margin:10mm;}'
+      +'@media print{.no-print{display:none!important;}}'
+      +'.header{text-align:center;padding:12px 0 8px;border-bottom:2px solid #333;margin-bottom:12px;}'
+      +'.info{display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:12px;padding:0 4px;}'
+      +'.img-wrap{text-align:center;}'
+      +'.img-wrap img{max-width:100%;max-height:calc(100vh - 120px);object-fit:contain;}'
+      +'</style></head><body>'
+      +'<div class="header">'
+      +'<div style="font-size:18px;font-weight:900;letter-spacing:2px;">KGM SEONGSU</div>'
+      +'<div style="font-size:10px;color:#888;letter-spacing:3px;">SERVICE CENTER · 부품 견적서</div>'
+      +'</div>'
+      +'<div class="info">'
+      +'<span>차량: <b>'+esc(info.carNum||'-')+'</b></span>'
+      +'<span>업체: <b>'+esc(info.supplier||'-')+'</b></span>'
+      +'<span>제출일: '+esc(info.date||'-')+'</span>'
+      +'<span>출력: '+new Date().toLocaleDateString('ko-KR')+'</span>'
+      +'</div>'
+      +'<div class="img-wrap"><img src="'+src+'"></div>'
+      +'<script>window.onload=function(){window.print();}<\/script>'
+      +'</body></html>');
+    w.document.close();
+  };
+
+  // 전체 견적서 프린트 (모든 이미지)
   window.printPartsQuotes=function(){
     var d=window._partsQuotePrintData;
     if(!d||!d.quotes.length)return;
     var today=new Date().toLocaleDateString('ko-KR');
     var body=d.quotes.map(function(q){
-      var partsRows=(q.parts||[]).map(function(p,i){
-        return '<tr style="border-bottom:1px solid #ddd;">'
-          +'<td style="padding:6px 8px;text-align:center;font-size:12px;">'+(i+1)+'</td>'
-          +'<td style="padding:6px 8px;font-size:12px;font-weight:600;">'+esc(p.name)+'</td>'
-          +'<td style="padding:6px 8px;font-size:12px;color:#666;">'+esc(p.code||'-')+'</td>'
-          +'<td style="padding:6px 8px;font-size:12px;text-align:right;font-family:monospace;">'+(p.price?p.price.toLocaleString()+'원':'-')+'</td>'
-          +'<td style="padding:6px 8px;font-size:12px;text-align:center;">'+p.qty+'</td>'
-          +'<td style="padding:6px 8px;font-size:12px;text-align:right;font-weight:700;font-family:monospace;">'+(p.subtotal?p.subtotal.toLocaleString()+'원':'-')+'</td>'
-          +'</tr>';
-      }).join('');
+      var allImages = q.imageDataList && q.imageDataList.length ? q.imageDataList : (q.imageData ? [q.imageData] : []);
       var submitDate=q.submittedAt?new Date(q.submittedAt.seconds*1000).toLocaleDateString('ko-KR'):'-';
-      return '<div style="margin-bottom:30px;page-break-inside:avoid;">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #333;">'
-        +'<span style="font-size:14px;font-weight:700;">'+esc(q.supplier)+(q.phone?' · '+esc(q.phone):'')+'</span>'
+      var imagesHtml=allImages.map(function(src){
+        return '<div style="text-align:center;margin-bottom:10px;page-break-inside:avoid;">'
+          +'<img src="'+src+'" style="max-width:100%;max-height:800px;object-fit:contain;">'
+          +'</div>';
+      }).join('');
+      return '<div style="page-break-after:always;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #333;">'
+        +'<span style="font-size:14px;font-weight:700;">'+esc(q.supplier)+'</span>'
         +'<span style="font-size:11px;color:#888;">제출일: '+submitDate+'</span>'
         +'</div>'
-        +(q.imageData?'<div style="margin-bottom:10px;text-align:center;"><img src="'+q.imageData+'" style="max-width:100%;max-height:400px;border:1px solid #ddd;border-radius:6px;"></div>':'')
-        +(q.memo?'<div style="margin-bottom:10px;padding:8px 12px;background:#f8f8f8;border-radius:6px;font-size:12px;"><b>메모:</b> '+esc(q.memo)+'</div>':'')
-        +'<table style="width:100%;border-collapse:collapse;">'
-        +'<thead><tr style="background:#f0f0f0;border-bottom:2px solid #333;">'
-        +'<th style="padding:7px 8px;font-size:11px;text-align:center;width:30px;">#</th>'
-        +'<th style="padding:7px 8px;font-size:11px;text-align:left;">부품명</th>'
-        +'<th style="padding:7px 8px;font-size:11px;text-align:left;">부품번호</th>'
-        +'<th style="padding:7px 8px;font-size:11px;text-align:right;">단가</th>'
-        +'<th style="padding:7px 8px;font-size:11px;text-align:center;">수량</th>'
-        +'<th style="padding:7px 8px;font-size:11px;text-align:right;">소계</th>'
-        +'</tr></thead>'
-        +'<tbody>'+partsRows+'</tbody>'
-        +'<tfoot><tr style="border-top:2px solid #333;background:#f8f0ff;">'
-        +'<td colspan="5" style="padding:8px;font-weight:700;text-align:right;font-size:13px;">부품 합계</td>'
-        +'<td style="padding:8px;font-weight:900;text-align:right;font-size:15px;color:#6d28d9;font-family:monospace;">'+((q.totalAmount||0).toLocaleString())+'원</td>'
-        +'</tr></tfoot>'
-        +'</table></div>';
+        +imagesHtml
+        +(q.memo?'<div style="margin-top:8px;padding:8px 12px;background:#f8f8f8;border-radius:6px;font-size:12px;"><b>메모:</b> '+esc(q.memo)+'</div>':'')
+        +'</div>';
     }).join('');
-    var grandTotal=d.quotes.reduce(function(s,q){return s+(q.totalAmount||0);},0);
     var w=window.open('','_blank','width=900,height=700');
     w.document.write('<html><head><meta charset="UTF-8"><title>부품견적서 - '+esc(d.carNum)+'</title>'
-      +'<style>body{font-family:"맑은 고딕",sans-serif;margin:24px;color:#111;}@page{margin:15mm;}'
-      +'table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;}</style></head><body>'
-      +'<div style="text-align:center;margin-bottom:20px;">'
+      +'<style>body{font-family:"맑은 고딕",sans-serif;margin:20px;color:#111;}'
+      +'@page{size:A4;margin:10mm;}</style></head><body>'
+      +'<div style="text-align:center;margin-bottom:16px;">'
       +'<div style="font-size:20px;font-weight:900;letter-spacing:2px;">KGM SEONGSU</div>'
-      +'<div style="font-size:11px;color:#888;letter-spacing:3px;">SERVICE CENTER · 외주 부품 견적서</div></div>'
-      +'<div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8f8f8;border-radius:6px;font-size:12px;margin-bottom:20px;">'
+      +'<div style="font-size:11px;color:#888;letter-spacing:3px;">SERVICE CENTER · 부품 견적서</div></div>'
+      +'<div style="display:flex;justify-content:space-between;padding:8px 14px;background:#f8f8f8;border-radius:6px;font-size:12px;margin-bottom:16px;">'
       +'<span>차량번호: <b>'+esc(d.carNum)+'</b></span>'
-      +'<span>출력일: '+today+'</span>'
-      +'<span>업체 수: '+d.quotes.length+'건</span></div>'
+      +'<span>출력일: '+today+'</span></div>'
       +body
-      +(d.quotes.length>1?'<div style="margin-top:20px;padding:14px;background:#f0e6ff;border-radius:8px;text-align:right;"><span style="font-size:13px;font-weight:700;">전체 합계: </span><span style="font-size:20px;font-weight:900;color:#6d28d9;font-family:monospace;">'+grandTotal.toLocaleString()+'원</span></div>':'')
-      +'<div style="margin-top:20px;padding-top:12px;border-top:1px solid #ddd;display:flex;justify-content:space-between;font-size:10px;color:#aaa;">'
-      +'<span>KGM 성수서비스센터 · UN Motors</span>'
-      +'<span>본 견적서는 부품대만 포함하며 공임은 별도입니다</span></div>'
       +'<script>window.onload=function(){window.print();}<\/script></body></html>');
     w.document.close();
   };
@@ -1487,9 +1600,28 @@
     document.getElementById('stat-done').textContent = list.filter(r=>r.status==='수리완료').length;
     document.getElementById('stat-today').textContent = list.filter(r=>r.inDate===today).length;
 
-    const show = list.filter(r => r.status !== '출고').sort((a,b) => new Date(b.inDate)-new Date(a.inDate));
+    const dq = (document.getElementById('dashSearchInput')?.value||'').toLowerCase().trim();
+    const dLoc = document.getElementById('dashFilterLoc')?.value||'';
+    const dSt = document.getElementById('dashFilterStatus')?.value||'';
+    const resultEl = document.getElementById('dashSearchResult');
+
+    const show = list.filter(r => {
+      if (r.status === '출고') return false;
+      const mq = !dq || r.carNum.toLowerCase().includes(dq) || r.name.toLowerCase().includes(dq) || (r.phone||'').includes(dq) || (r.repair||'').toLowerCase().includes(dq);
+      const ml = !dLoc || (r.location||'') === dLoc;
+      const ms = !dSt || r.status === dSt;
+      return mq && ml && ms;
+    }).sort((a,b) => new Date(b.inDate)-new Date(a.inDate));
+
+    if (dq || dLoc || dSt) {
+      resultEl.style.display = 'block';
+      resultEl.textContent = `검색 결과: ${show.length}대` + (dq ? ` (\"${dq}\")` : '') + (dLoc ? ` · 위치: ${dLoc}` : '') + (dSt ? ` · 상태: ${dSt}` : '');
+    } else {
+      resultEl.style.display = 'none';
+    }
+
     const tbody = document.getElementById('dashboard-tbody');
-    if (!show.length) { tbody.innerHTML = `<tr><td colspan="12" class="empty" style="padding:30px">입고 차량이 없습니다</td></tr>`; return; }
+    if (!show.length) { tbody.innerHTML = `<tr><td colspan="12" class="empty" style="padding:30px">${(dq||dLoc||dSt) ? '검색 결과가 없습니다' : '입고 차량이 없습니다'}</td></tr>`; return; }
     tbody.innerHTML = show.map(r => `
       <tr>
         <td><span class="car-num" onclick="openDetailModal('${esc(r.id)}')" style="cursor:pointer;" title="클릭하여 상세보기">🔍 ${esc(r.carNum)}</span></td>
@@ -1973,6 +2105,59 @@
     setTimeout(()=>n.classList.remove('show'), 2800);
   }
   window.showNotif = showNotif;
+
+  // ---- 부품견적 실시간 알림 ----
+  let _partsQuoteIds = null; // 초기 로드 시 기존 ID 저장 (첫 로드는 알림 안 띄움)
+  let _partsAlertQueue = [];
+  let _partsAlertCurrent = null;
+
+  const partsQuotesQuery = query(collection(fsd, 'parts_quotes'), orderBy('submittedAt', 'desc'));
+  onSnapshot(partsQuotesQuery, (snapshot) => {
+    if (_partsQuoteIds === null) {
+      // 첫 로드: 기존 문서 ID만 기록
+      _partsQuoteIds = new Set(snapshot.docs.map(d => d.id));
+      return;
+    }
+    snapshot.docChanges().forEach(change => {
+      if (change.type === 'added' && !_partsQuoteIds.has(change.doc.id)) {
+        _partsQuoteIds.add(change.doc.id);
+        const data = change.doc.data();
+        _partsAlertQueue.push(data);
+        if (!_partsAlertCurrent) showNextPartsAlert();
+      }
+    });
+  });
+
+  function showNextPartsAlert() {
+    if (!_partsAlertQueue.length) { _partsAlertCurrent = null; return; }
+    _partsAlertCurrent = _partsAlertQueue.shift();
+    const q = _partsAlertCurrent;
+    document.getElementById('partsAlertCarNum').textContent = q.carNum || '—';
+    document.getElementById('partsAlertSupplier').textContent = q.supplier || '—';
+    var imgCount = (q.imageDataList && q.imageDataList.length) ? q.imageDataList.length : (q.imageData ? 1 : 0);
+    document.getElementById('partsAlertTotal').textContent = imgCount ? imgCount + '장' : '없음';
+    const t = q.submittedAt ? new Date(q.submittedAt.seconds * 1000) : new Date();
+    document.getElementById('partsAlertTime').textContent = t.toLocaleString('ko-KR');
+    document.getElementById('partsAlertOverlay').classList.add('open');
+    // 알림음
+    try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2LkZmXkIiAd3N4gIeLjYuHg39+gYWJi4mGgoB/goaJi4mGgoB+gIOHiomHhIF/foCEiIqIhoOBf4CEiIqIhoOBf4CEh4mHhYKAfoCDh4mIhoOBf4CDh4mHhYKAfn+DhoiHhYKAfn+DhoiHhYOBf3+ChoeHhYOBf3+ChoeGhIOBf3+ChoeGhIOBfn+ChYaGhIOBfn+ChYaGhIOBfn+ChYaGhIOBfn+ChYaGhIOBfn6BhYaGhYOBfn6BhYaGhYOBfn6BhIWGhYOBfn6BhIWFhYOBfn6BhIWFhYOBfn6BhIWFhIOBfn6BhIWFhIOBfn6BhIWFhIOBfn6AhIWFhIOBfn6AhIWFhIOBfn6AhIWFhIOBfn6AhIWFhIOAfn6Ag4SFhIOAfn6Ag4SFhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIOAfn6Ag4SEhIKAfn6Ag4SEhIKAfn6Ag4SEhIKAfn5/g4SEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/g4OEhIKAfn5/goOEhIKAfn5/goOEhIKAfn5/goOEhIKAfn5/goOEhIKAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4KAfn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goOEg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/goODg4F/fn5/gYODg4F/fn5/gYODg4F/fn5/gYODg4F/fn5/gYODg4F/fn5/gYODg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5/gYKDg4F/fn5+gYKDg4F/fn5+gYKDg4F/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKDgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gYKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIKCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoF/fn5+gIGCgoB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGCgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn5+gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgYB/fn59gIGBgIB/fn59gIGBgIB/fn59gIGBgIB/fn59gIGBgIB/fn59').play(); } catch(e) {}
+  }
+
+  window.closePartsAlert = function() {
+    document.getElementById('partsAlertOverlay').classList.remove('open');
+    setTimeout(showNextPartsAlert, 300);
+  };
+
+  window.viewPartsAlert = function() {
+    const q = _partsAlertCurrent;
+    document.getElementById('partsAlertOverlay').classList.remove('open');
+    if (q && q.recordId && q.carNum) {
+      showPartsQuotes(q.recordId, q.carNum);
+    }
+    _partsAlertCurrent = null;
+    // 남은 큐가 있으면 이어서
+    setTimeout(showNextPartsAlert, 500);
+  };
 
   // expose renderList for search input
   window.renderList = renderList;

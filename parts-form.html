@@ -84,28 +84,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
 }
 .img-count { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
 
-/* 부품 목록 */
-.part-row {
-  display: grid; grid-template-columns: 1fr 1fr 90px 70px 36px;
-  gap: 6px; margin-bottom: 8px; align-items: end;
-}
-.part-row .form-input { padding: 10px; font-size: 13px; border-radius: 8px; }
-.part-label { font-size: 10px; color: var(--text-dim); margin-bottom: 3px; }
-.part-del {
-  width: 36px; height: 40px; background: rgba(239,68,68,.1);
-  border: 1px solid rgba(239,68,68,.2); border-radius: 8px;
-  color: var(--red); font-size: 18px; cursor: pointer; display: flex;
-  align-items: center; justify-content: center;
-}
-.part-del:hover { background: rgba(239,68,68,.25); }
-.add-part-btn {
-  width: 100%; padding: 10px; background: rgba(139,92,246,.08);
-  border: 1px dashed rgba(139,92,246,.3); border-radius: 10px;
-  color: var(--accent); font-size: 13px; font-weight: 600; cursor: pointer;
-  font-family: 'Noto Sans KR', sans-serif; transition: all .2s;
-}
-.add-part-btn:hover { background: rgba(139,92,246,.15); border-style: solid; }
-
 /* 제출 */
 .submit-btn {
   width: 100%; padding: 16px; margin-top: 24px;
@@ -143,14 +121,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
 .error-screen { display: none; text-align: center; padding: 80px 20px; }
 .error-icon { font-size: 48px; margin-bottom: 12px; }
 
-/* 모바일 */
-@media (max-width: 500px) {
-  .part-row { grid-template-columns: 1fr 1fr; }
-  .part-row > div:nth-child(3) { grid-column: 1; }
-  .part-row > div:nth-child(4) { grid-column: 2; }
-  .part-row > div:nth-child(5) { grid-column: 1 / -1; }
-  .part-del { width: 100%; }
-}
 </style>
 </head>
 <body>
@@ -197,19 +167,12 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
     <div class="img-count" id="imgCount"></div>
   </div>
 
-  <!-- 수리 메모 -->
+  <!-- 메모 (선택) -->
   <div class="section">
-    <div class="section-title">수리 메모</div>
+    <div class="section-title">메모 (선택사항)</div>
     <div class="form-group">
-      <textarea class="form-textarea" id="repairMemo" placeholder="수리 관련 메모를 입력하세요 (부품 상태, 특이사항 등)"></textarea>
+      <textarea class="form-textarea" id="repairMemo" placeholder="전달사항이 있으면 입력하세요 (선택)"></textarea>
     </div>
-  </div>
-
-  <!-- 부품 목록 -->
-  <div class="section">
-    <div class="section-title">부품 목록</div>
-    <div id="partsList"></div>
-    <button class="add-part-btn" onclick="addPartRow()">+ 부품 추가</button>
   </div>
 
   <button class="submit-btn" id="submitBtn" onclick="submitQuote()">견적서 제출</button>
@@ -279,7 +242,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
     } else {
       document.getElementById('formContainer').style.display = 'block';
       document.getElementById('dispCarNum').textContent = decodeURIComponent(carNum);
-      addPartRow();
     }
   }
 
@@ -330,49 +292,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
     renderImageGrid();
   };
 
-  // 부품 행 추가
-  var partIndex = 0;
-  window.addPartRow = function() {
-    var idx = partIndex++;
-    var div = document.createElement('div');
-    div.className = 'part-row';
-    div.id = 'part-' + idx;
-    div.innerHTML =
-      '<div><div class="part-label">부품명 *</div><input class="form-input" placeholder="예: 앞범퍼" data-field="name"></div>'
-      + '<div><div class="part-label">부품번호</div><input class="form-input" placeholder="예: 7711-34520" data-field="code"></div>'
-      + '<div><div class="part-label">단가 (원)</div><input class="form-input" type="number" placeholder="0" data-field="price"></div>'
-      + '<div><div class="part-label">수량</div><input class="form-input" type="number" placeholder="1" value="1" min="1" data-field="qty"></div>'
-      + '<div><div class="part-label">&nbsp;</div><button class="part-del" onclick="delPart(' + idx + ')">×</button></div>';
-    document.getElementById('partsList').appendChild(div);
-  };
-
-  window.delPart = function(idx) {
-    var el = document.getElementById('part-' + idx);
-    if (el) el.remove();
-    // 최소 1행 유지
-    if (!document.getElementById('partsList').children.length) addPartRow();
-  };
-
   // 초기화 실행
   initForm();
 
   // 제출
   window.submitQuote = async function() {
     var supplier = document.getElementById('supplierName').value.trim();
-    if (!supplier) { alert('업체명을 입력해주세요.'); return; }
+    if (!supplier) { alert('업체명을 선택해주세요.'); return; }
 
-    // 부품 목록 수집
-    var parts = [];
-    var rows = document.querySelectorAll('.part-row');
-    rows.forEach(function(row) {
-      var name = row.querySelector('[data-field="name"]').value.trim();
-      var code = row.querySelector('[data-field="code"]').value.trim();
-      var price = parseInt(row.querySelector('[data-field="price"]').value) || 0;
-      var qty = parseInt(row.querySelector('[data-field="qty"]').value) || 1;
-      if (name) parts.push({ name: name, code: code, price: price, qty: qty, subtotal: price * qty });
-    });
-
-    if (!parts.length) { alert('부품을 최소 1개 이상 입력해주세요.'); return; }
+    if (!window._imgFiles.length) { alert('견적서 사진을 최소 1장 첨부해주세요.'); return; }
 
     var btn = document.getElementById('submitBtn');
     btn.disabled = true;
@@ -382,15 +310,12 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
       var imgData = '';
       var imgDataList = [];
 
-      // 이미지 압축 후 base64로 변환 (여러 장)
+      // 이미지 압축 후 base64로 변환 (프린트용 고해상도)
       for (var i = 0; i < window._imgFiles.length; i++) {
-        var compressed = await compressImage(window._imgFiles[i].file, 1200, 0.7);
+        var compressed = await compressImage(window._imgFiles[i].file, 2400, 0.85);
         imgDataList.push(compressed);
       }
       if (imgDataList.length) imgData = imgDataList[0];
-
-      // 총액 계산
-      var totalAmount = parts.reduce(function(s, p) { return s + p.subtotal; }, 0);
 
       // Firestore에 저장
       var quoteId = 'PQ' + Date.now();
@@ -403,8 +328,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', s
         imageData: imgData,
         imageDataList: imgDataList,
         memo: document.getElementById('repairMemo').value.trim(),
-        parts: parts,
-        totalAmount: totalAmount,
+        parts: [],
+        totalAmount: 0,
         submittedAt: serverTimestamp(),
         status: 'pending'
       });
