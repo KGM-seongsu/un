@@ -388,7 +388,7 @@
       drops[i]+=.5+Math.random()*.5;
     }
   }
-  setInterval(draw,50);
+  window._matrixTimer=setInterval(draw,50);
 })();
 </script>
 
@@ -855,7 +855,7 @@
 
 
 <!-- LOGIN SCREEN -->
-<div id="loginScreen" style="display:none;position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+<div id="loginScreen" style="position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;overflow:hidden;">
   <!-- 배경 -->
   <div style="position:absolute;inset:0;background:#1a1a2e;"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(47,44,77,.9) 0%,rgba(10,10,20,.95) 50%,rgba(47,44,77,.6) 100%);"></div>
@@ -1022,7 +1022,7 @@
         badge.className='date-badge';
         badge.style.cssText='cursor:pointer;display:flex;align-items:center;gap:6px;';
         badge.innerHTML='<img src="'+(user.photoURL||'')+'" style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(139,92,246,.3)">'
-          +'<span style="font-family:Inter,sans-serif;font-size:11px;">'+window._userName.split(' ')[0]+'</span>'
+          +'<span style="font-family:Inter,sans-serif;font-size:11px;">'+(window._userName||'').split(' ')[0]+'</span>'
           +'<span style="font-size:9px;color:var(--accent);font-weight:700;text-transform:uppercase;">'+role+'</span>';
         badge.onclick=function(){if(confirm('로그아웃 하시겠습니까?'))authSignOut();};
         headerRight.appendChild(badge);
@@ -1031,6 +1031,9 @@
       // 로그인 화면 숨기기 → 앱 표시
       loginScreen.style.display='none';
       document.body.style.overflow='';
+      // Matrix 배경 애니메이션 중지 (성능)
+      if(window._matrixTimer){clearInterval(window._matrixTimer);window._matrixTimer=null;}
+      var mc=document.getElementById('matrixBg');if(mc)mc.style.display='none';
 
     } catch(e){
       document.getElementById('loginError').textContent='권한 확인 실패: '+e.message;
